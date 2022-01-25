@@ -18,9 +18,13 @@ package containerd
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
+	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 	"github.com/containerd/containerd/containers"
 	"github.com/containerd/containerd/errdefs"
+	"github.com/containerd/containerd/log"
 	"github.com/containerd/containerd/oci"
 	"github.com/containerd/containerd/snapshots"
 	"github.com/containerd/typeurl"
@@ -285,4 +289,30 @@ func WithSpec(s *oci.Spec, opts ...oci.SpecOpts) NewContainerOpts {
 // WithoutRefreshedMetadata will use the current metadata attached to the container object
 func WithoutRefreshedMetadata(i *InfoConfig) {
 	i.Refresh = false
+}
+
+// WithCDI updates OCI spec with CDI content
+func WithCDI(s *oci.Spec, annotations map[string]string) NewContainerOpts {
+	return func(ctx context.Context, _ *Client, c *containers.Container) error {
+		cdiDevices, err := cdi.ParseAnnotations(annotations)
+		if err != nil {
+			return fmt.Errorf("failed to parse CDI device annotations: %+v", err)
+		}
+		if cdiDevices != nil {
+			registry := cdi.GetRegistry()
+			if err = registry.Refresh(); err != nil {
+				log.G(ctx).Warnf("CDI registry refresh failed: %v", err)
+			}
+			unresolved, err := registry.InjectDevices(s, cdiDevices...)
+			if unresolved != nil {
+				log.G(ctx).Warnf("CDI resolution failed for %q", strings.Join(unresolved, ","))
+			}
+			if err != nil {
+				return fmt.Errorf("CDI device injection failed: %+v", err)
+			}
+		} else {
+			log.G(ctx).Infof("no CDI-annotated devices")
+		}
+		return nil
+	}
 }
