@@ -103,5 +103,7 @@ func DefaultConfig() PluginConfig {
 		ImageDecryption: ImageDecryption{
 			KeyModel: KeyModelNode,
 		},
+		EnableCDI:   false,
+		CDISpecDirs: []string{"/etc/cdi", "/var/run/cdi"},
 	}
 }

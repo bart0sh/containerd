@@ -266,6 +266,13 @@ type PluginConfig struct {
 	// of being placed under the hardcoded directory /var/run/netns. Changing this setting requires
 	// that all containers are deleted.
 	NetNSMountsUnderStateDir bool `toml:"netns_mounts_under_state_dir" json:"netnsMountsUnderStateDir"`
+	// EnableCDI indicates to enable injection of the Container Device Interface Specifications
+	// into the OCI config
+	// For more details about CDI and the syntax of CDI Spec files please refer to
+	// https://github.com/container-orchestrated-devices/container-device-interface.
+	EnableCDI bool `toml:"enable_cdi" json:"enableCDI"`
+	// CDISpecDirs is the list of directories to scan for Container Device Interface Specifications
+	CDISpecDirs []string `toml:"cdi_spec_dirs" json:"cdiSpecDirs"`
 }
 
 // X509KeyPairStreaming contains the x509 configuration for streaming
