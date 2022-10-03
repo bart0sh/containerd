@@ -19,6 +19,7 @@ package oci
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/container-orchestrated-devices/container-device-interface/pkg/cdi"
 	"github.com/containerd/containerd/containers"
@@ -193,7 +194,7 @@ func WithCDI(annotations map[string]string, cdiSpecDirs []string) SpecOpts {
 		}
 
 		if _, err := registry.InjectDevices(s, cdiDevices...); err != nil {
-			return fmt.Errorf("CDI device injection failed: %w", err)
+			return fmt.Errorf("CDI device injection failed: available CDI devices: %q, error: %w", strings.Join(registry.DeviceDB().ListDevices(), ","), err)
 		}
 
 		// One crucial thing to keep in mind is that CDI device injection
